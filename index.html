@@ -349,6 +349,16 @@ document.addEventListener('keydown', e => {
   if(e.key==='ArrowRight') { scrub(-1); e.preventDefault(); }
 });
 
+// Swipe to scrub on mobile
+let touchX=null;
+document.getElementById('results').addEventListener('touchstart', e => { touchX=e.touches[0].clientX; }, {passive:true});
+document.getElementById('results').addEventListener('touchend', e => {
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  touchX=null;
+  if(Math.abs(dx)>60) scrub(dx<0 ? 1 : -1);
+}, {passive:true});
+
 // ─── Controls ───
 function setPeriod(n) {
   period = n;
