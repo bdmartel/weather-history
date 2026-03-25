@@ -54,11 +54,7 @@
     .pbtn.active {
       background: #222; color: #fff; border-color: #222; font-weight: 700;
     }
-    .ybtn.active.y0 { background: #e3f2fd; color: #0277bd; border-color: #0277bd; font-weight: 700; }
-    .ybtn.active.y1 { background: #fff3e0; color: #e65100; border-color: #e65100; font-weight: 700; }
-    .ybtn.active.y2 { background: #e8f5e9; color: #2e7d32; border-color: #2e7d32; font-weight: 700; }
-    .ybtn.active.y3 { background: #f3e5f5; color: #7b1fa2; border-color: #7b1fa2; font-weight: 700; }
-    .ybtn.active.y4 { background: #ffebee; color: #c62828; border-color: #c62828; font-weight: 700; }
+    .ybtn.active { font-weight: 700; }
 
     /* Loading / Error */
     #loading { text-align: center; padding: 24px; color: #888; font-size: 9pt; }
@@ -185,14 +181,21 @@ const HOURLY   = 'relative_humidity_2m';
 
 const NOW = new Date();
 const THIS_YEAR = NOW.getFullYear();
-const YEARS = [THIS_YEAR, THIS_YEAR-1, THIS_YEAR-2, THIS_YEAR-3, THIS_YEAR-4];
+const YEARS = Array.from({length: THIS_YEAR - 2015 + 1}, (_, i) => THIS_YEAR - i);
 
 const C = [
-  { m:'#0277bd', f:'rgba(2,119,189,0.08)',   d:'#01579b' },
-  { m:'#e65100', f:'rgba(230,81,0,0.08)',     d:'#bf360c' },
-  { m:'#2e7d32', f:'rgba(46,125,50,0.08)',    d:'#1b5e20' },
-  { m:'#7b1fa2', f:'rgba(123,31,162,0.08)',   d:'#4a148c' },
-  { m:'#c62828', f:'rgba(198,40,40,0.08)',    d:'#b71c1c' },
+  { m:'#0277bd', d:'#01579b' },
+  { m:'#e65100', d:'#bf360c' },
+  { m:'#2e7d32', d:'#1b5e20' },
+  { m:'#7b1fa2', d:'#4a148c' },
+  { m:'#c62828', d:'#b71c1c' },
+  { m:'#00838f', d:'#006064' },
+  { m:'#4e342e', d:'#3e2723' },
+  { m:'#1565c0', d:'#0d47a1' },
+  { m:'#ad1457', d:'#880e4f' },
+  { m:'#558b2f', d:'#33691e' },
+  { m:'#ef6c00', d:'#e65100' },
+  { m:'#6a1b9a', d:'#4a148c' },
 ];
 
 const WX = {
@@ -302,9 +305,12 @@ function toggleYear(yr) {
   scheduleRefresh();
 }
 function renderYearBtns() {
-  document.getElementById('years').innerHTML = '<span class="lbl">Years</span>' + YEARS.map((yr,i) =>
-    `<button class="ybtn y${i}${activeYears.has(yr)?' active':''}" onclick="toggleYear(${yr})">${yr}</button>`
-  ).join('');
+  document.getElementById('years').innerHTML = '<span class="lbl">Years</span>' + YEARS.map((yr,i) => {
+    const on = activeYears.has(yr);
+    const ci = i % C.length;
+    const style = on ? `background:${C[ci].m}12;color:${C[ci].m};border-color:${C[ci].m}` : '';
+    return `<button class="ybtn${on?' active':''}" style="${style}" onclick="toggleYear(${yr})">${yr}</button>`;
+  }).join('');
 }
 
 // Location
