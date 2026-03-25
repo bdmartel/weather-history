@@ -316,7 +316,7 @@ async function refresh() {
   rangeEl.innerHTML = `<button class="scrub-btn" onclick="scrub(1)">\u25C0</button>`
     +`<span class="dates">${shortDate(fmt(baseStart))} \u2013 ${shortDate(fmt(baseEnd))}</span>`
     +`<button class="scrub-btn" onclick="scrub(-1)"${scrubOffset<=0?' disabled':''}>\u25B6</button>`
-    +`<span class="hint">\u2190\u2192 arrow keys to scrub</span>`;
+;
 
   try {
     const sorted = [...activeYears].sort((a,b)=>b-a);
