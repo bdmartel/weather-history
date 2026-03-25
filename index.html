@@ -123,6 +123,33 @@
     footer { text-align: center; padding: 16px; color: #aaa; font-size: 7pt; border-top: 1px solid #eee; margin-top: 12px; }
     footer a { color: #0277bd; text-decoration: none; }
 
+    /* Dark mode */
+    body.dark { background: #111; color: #e0e0e0; }
+    body.dark header { border-bottom-color: #444; }
+    body.dark .loc-name { color: #aaa; }
+    body.dark .loc-btn { color: #666; }
+    body.dark .loc-btn:hover { color: #4fc3f7; }
+    body.dark .ctrl-row .lbl { color: #555; }
+    body.dark .pbtn, body.dark .ybtn { background: #1a1a1a; color: #888; border-color: #2a2a2a; }
+    body.dark .pbtn:hover, body.dark .ybtn:hover { border-color: #555; color: #ccc; }
+    body.dark .pbtn.active { background: #e0e0e0; color: #111; border-color: #e0e0e0; }
+    body.dark #loc-input { background: #1a1a1a; color: #e0e0e0; border-color: #333; }
+    body.dark #loc-input:focus { border-color: #4fc3f7; }
+    body.dark #loc-results { background: #1a1a1a; border-color: #333; }
+    body.dark .loc-item:hover { background: #2a2a2a; }
+    body.dark .spinner { border-color: #333; border-top-color: #4fc3f7; }
+    body.dark #error { background: #2a1a1a; border-color: #ef5350; color: #ef5350; }
+    body.dark .summary-tbl th, body.dark table.daily th { background: #2a2a2a; color: #ddd; }
+    body.dark .summary-tbl td { color: #ccc; }
+    body.dark .summary-tbl tr:nth-child(even) td { background: #1a1a1a; }
+    body.dark .sec-hdr { color: #ccc; border-bottom-color: #333; }
+    body.dark table.daily td { color: #ccc; }
+    body.dark table.daily tbody tr:nth-child(even) td { background: #1a1a1a; }
+    body.dark table.daily tbody tr:hover td { background: #1a2e1a; }
+    body.dark .freeze, body.dark td.freeze { color: #4fc3f7; }
+    body.dark footer { color: #444; border-top-color: #222; }
+    body.dark footer a { color: #4fc3f7; }
+
     @media (max-width: 600px) {
       body { padding: 8px; }
       .pbtn, .ybtn { padding: 8px 14px; font-size: 9pt; min-height: 38px; }
@@ -140,6 +167,7 @@
       <span class="loc-name" id="loc-name"></span>
       <button class="loc-btn" onclick="toggleLoc()">change</button>
     </div>
+    <button class="loc-btn" id="theme-btn" onclick="toggleDark()" style="margin-left:auto">dark</button>
     <div id="loc-search" class="hidden">
       <input type="text" id="loc-input" placeholder="Search city..." oninput="debounceGeo()" onkeydown="if(event.key==='Escape')toggleLoc()">
       <div id="loc-results"></div>
@@ -239,6 +267,18 @@ function loadHash() {
 function syncHash() {
   const yrs = [...activeYears].sort((a,b)=>b-a).join(',');
   history.replaceState(null,null,`#p=${period}&y=${yrs}&o=${scrubOffset}`);
+}
+
+// ─── Theme ───
+function toggleDark() {
+  const dk = document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = dk ? 'light' : 'dark';
+  localStorage.setItem('wx-theme', dk ? 'dark' : 'light');
+  if(Object.keys(yearData).length) { const s=[...activeYears].sort((a,b)=>b-a); renderCharts(s); }
+}
+if(localStorage.getItem('wx-theme')==='dark'){
+  document.body.classList.add('dark');
+  document.getElementById('theme-btn').textContent='light';
 }
 
 // ─── Init ───
@@ -470,19 +510,21 @@ function xLabels() {
   return ref.dates.map(d => shortDate(d));
 }
 
+function isDark(){return document.body.classList.contains('dark');}
 function chartOpts(yLabel) {
+  const dk=isDark();
   return {
     responsive:true, maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{
-      legend:{labels:{color:'#333',boxWidth:10,font:{size:9,family:'Helvetica Neue, Arial'}}},
-      tooltip:{backgroundColor:'#fff',titleColor:'#222',bodyColor:'#555',borderColor:'#ccc',borderWidth:1,
+      legend:{labels:{color:dk?'#aaa':'#333',boxWidth:10,font:{size:9,family:'Helvetica Neue, Arial'}}},
+      tooltip:{backgroundColor:dk?'#222':'#fff',titleColor:dk?'#e0e0e0':'#222',bodyColor:dk?'#aaa':'#555',borderColor:dk?'#444':'#ccc',borderWidth:1,
         titleFont:{family:'Helvetica Neue, Arial'},bodyFont:{family:'Helvetica Neue, Arial'}}
     },
     scales:{
-      x:{ticks:{color:'#888',font:{size:8,family:'Helvetica Neue, Arial'},maxRotation:45},grid:{color:'#eee'}},
-      y:{ticks:{color:'#888',font:{size:8,family:'Helvetica Neue, Arial'}},grid:{color:'#eee'},
-         title:{display:!!yLabel,text:yLabel,color:'#888',font:{size:9,family:'Helvetica Neue, Arial'}}}
+      x:{ticks:{color:dk?'#666':'#888',font:{size:8,family:'Helvetica Neue, Arial'},maxRotation:45},grid:{color:dk?'#2a2a2a':'#eee'}},
+      y:{ticks:{color:dk?'#666':'#888',font:{size:8,family:'Helvetica Neue, Arial'}},grid:{color:dk?'#2a2a2a':'#eee'},
+         title:{display:!!yLabel,text:yLabel,color:dk?'#666':'#888',font:{size:9,family:'Helvetica Neue, Arial'}}}
     }
   };
 }
