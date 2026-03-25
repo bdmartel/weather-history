@@ -120,26 +120,12 @@
     .wx-tag { font-size: 7pt; font-weight: 600; }
     .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
 
-    .date-range {
-      font-size: 8pt; color: #888; margin-bottom: 12px;
-      display: flex; align-items: center; gap: 8px;
-      justify-content: center;
-    }
-    .date-range .dates { font-weight: 600; color: #555; }
-    .date-range .hint { font-size: 7pt; color: #bbb; }
-    .scrub-btn {
-      background: none; border: 1px solid #ddd; color: #888; cursor: pointer;
-      padding: 1px 8px; font-size: 9pt; line-height: 1.2;
-    }
-    .scrub-btn:hover { border-color: #888; color: #222; }
-
     footer { text-align: center; padding: 16px; color: #aaa; font-size: 7pt; border-top: 1px solid #eee; margin-top: 12px; }
     footer a { color: #0277bd; text-decoration: none; }
 
     @media (max-width: 600px) {
       body { padding: 8px; }
       .pbtn, .ybtn { padding: 8px 14px; font-size: 9pt; min-height: 38px; }
-      .date-range { display: none !important; }
       .chart-wrap { height: 180px; }
       .summary-tbl { font-size: 8pt; }
       table.daily { font-size: 7.5pt; }
@@ -172,8 +158,6 @@
     <button class="pbtn" onclick="setPeriod(365)">1 Year</button>
   </div>
   <div class="ctrl-row" id="years"></div>
-
-  <div class="date-range" id="date-range"></div>
 
   <div id="loading" class="hidden"><span class="spinner"></span> Loading...</div>
   <div id="error" class="hidden"></div>
@@ -312,13 +296,6 @@ async function refresh() {
   showLoading(true); hideError(); syncHash();
   const baseEnd = new Date(NOW); baseEnd.setDate(baseEnd.getDate()-1-scrubOffset);
   const baseStart = new Date(baseEnd); baseStart.setDate(baseStart.getDate()-period+1);
-
-  // Show date range
-  const rangeEl = document.getElementById('date-range');
-  rangeEl.innerHTML = `<button class="scrub-btn" onclick="scrub(1)">\u25C0</button>`
-    +`<span class="dates">${shortDate(fmt(baseStart))} \u2013 ${shortDate(fmt(baseEnd))}</span>`
-    +`<button class="scrub-btn" onclick="scrub(-1)"${scrubOffset<=0?' disabled':''}>\u25B6</button>`
-;
 
   try {
     const sorted = [...activeYears].sort((a,b)=>b-a);
