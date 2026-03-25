@@ -114,6 +114,9 @@
     table.daily td { padding: 3px 6px; }
     table.daily tbody tr:nth-child(even) td { background: #f5f5f5; }
     table.daily tbody tr:hover td { background: #e8f4e8; }
+    table.daily tbody tr.frost td { background: #e3f2fd; }
+    table.daily tbody tr.frost:nth-child(even) td { background: #d6ebfa; }
+    .frost-tag { font-size: 6pt; font-weight: 700; color: #0277bd; text-transform: uppercase; margin-left: 3px; }
     .wx-tag { font-size: 7pt; font-weight: 600; }
     .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
 
@@ -355,6 +358,9 @@ function shortDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateStrin
 function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
 function sum(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b):null;}
 function cntNZ(a){return a.filter(x=>x!=null&&x>0).length;}
+function maxV(a){const v=a.filter(x=>x!=null);return v.length?Math.max(...v):null;}
+function minV(a){const v=a.filter(x=>x!=null);return v.length?Math.min(...v):null;}
+function frostCt(a){return a.filter(x=>x!=null&&x<=32).length;}
 function fv(v,dec,u){return v!=null?(dec?v.toFixed(dec):Math.round(v))+u:'--';}
 
 // ─── Render ───
@@ -368,7 +374,10 @@ function renderAll() {
 function renderSummary(sorted) {
   const cols = [
     {t:'Avg High',k:'high',fn:avg,u:'\u00b0F',dec:1},
+    {t:'Peak High',k:'high',fn:maxV,u:'\u00b0F',dec:1},
     {t:'Avg Low',k:'low',fn:avg,u:'\u00b0F',dec:1},
+    {t:'Lowest Low',k:'low',fn:minV,u:'\u00b0F',dec:1},
+    {t:'Frost Days',k:'low',fn:frostCt,u:'',dec:0},
     {t:'Precip',k:'precip',fn:sum,u:'"',dec:2},
     {t:'Rain Days',k:'rain',fn:cntNZ,u:'',dec:0},
     {t:'Snow Days',k:'snow',fn:cntNZ,u:'',dec:0},
@@ -418,7 +427,11 @@ function renderCharts(sorted) {
   destroyCharts();
   const labels = xLabels();
 
-  const tempDS = [];
+  const tempDS = [{
+    label:'32\u00b0F Freeze',data:labels.map(()=>32),
+    borderColor:'#90caf9',borderWidth:1,borderDash:[6,4],
+    pointRadius:0,fill:false,order:99
+  }];
   sorted.forEach(yr => {
     const ci = YEARS.indexOf(yr); const d = yearData[yr]; if(!d) return;
     tempDS.push(
@@ -455,10 +468,11 @@ function renderTables(sorted) {
     h += '<th>Hum</th></tr></thead><tbody>';
     d.dates.forEach((_,i)=>{
       const wx=WX[d.wxCode[i]]||'--', wc=wxColor(d.wxCode[i]);
-      h+=`<tr><td>${formatDate(d.dates[i])}</td>`;
+      const isFrost = d.low[i]!=null && d.low[i]<=32;
+      h+=`<tr${isFrost?' class="frost"':''}><td>${formatDate(d.dates[i])}</td>`;
       h+=`<td><span class="wx-tag" style="color:${wc}">${wx}</span></td>`;
       h+=`<td class="num">${d.high[i]!=null?d.high[i].toFixed(1)+'\u00b0':'--'}</td>`;
-      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}</td>`;
+      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}${isFrost?'<span class="frost-tag">frost</span>':''}</td>`;
       h+=`<td class="num">${d.precip[i]!=null?d.precip[i].toFixed(2)+'"':'--'}</td>`;
       if(hasSnow) h+=`<td class="num">${d.snow[i]>0?d.snow[i].toFixed(1)+'"':'--'}</td>`;
       h+=`<td class="num">${d.humidity[i]!=null?d.humidity[i]+'%':'--'}</td></tr>`;
