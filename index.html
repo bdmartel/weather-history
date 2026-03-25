@@ -8,94 +8,127 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #111; color: #e0e0e0;
-      font-family: 'Inter', -apple-system, system-ui, sans-serif;
-      line-height: 1.5; padding: 16px; max-width: 900px; margin: 0 auto;
+      background: #fff; color: #222;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9pt; line-height: 1.45;
+      padding: 16px; max-width: 880px; margin: 0 auto;
     }
-    .data, code, table { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
-    h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-    h3 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 8px; }
     .hidden { display: none !important; }
 
-    header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .loc-btn { background: none; border: none; color: #666; cursor: pointer; font-size: 0.8rem; }
-    .loc-btn:hover { color: #4fc3f7; }
+    /* Header */
+    header {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px;
+      border-bottom: 2px solid #222; padding-bottom: 8px; flex-wrap: wrap;
+    }
+    h1 { font-size: 13pt; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }
+    .loc-name { font-size: 9pt; color: #555; }
+    .loc-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 8pt; text-decoration: underline; }
+    .loc-btn:hover { color: #0277bd; }
     #loc-search { width: 100%; position: relative; }
     #loc-input {
-      width: 100%; background: #1a1a1a; color: #e0e0e0; border: 1px solid #333;
-      border-radius: 6px; padding: 8px 12px; font-size: 0.9rem; outline: none;
+      width: 100%; background: #fff; color: #222; border: 1px solid #ccc;
+      padding: 5px 8px; font-size: 9pt; outline: none;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
     }
-    #loc-input:focus { border-color: #4fc3f7; }
+    #loc-input:focus { border-color: #0277bd; }
     #loc-results {
-      position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a;
-      border: 1px solid #333; border-top: none; border-radius: 0 0 6px 6px;
-      max-height: 200px; overflow-y: auto; z-index: 10;
+      position: absolute; top: 100%; left: 0; right: 0; background: #fff;
+      border: 1px solid #ccc; border-top: none; max-height: 180px; overflow-y: auto; z-index: 10;
     }
-    .loc-item { padding: 8px 12px; cursor: pointer; font-size: 0.85rem; }
-    .loc-item:hover { background: #2a2a2a; }
+    .loc-item { padding: 5px 8px; cursor: pointer; font-size: 8.5pt; }
+    .loc-item:hover { background: #f0f0f0; }
 
-    /* Button rows */
-    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .btn-row label { font-size: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 6px; align-self: center; }
+    /* Controls */
+    .ctrl-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+    .ctrl-row .lbl {
+      font-size: 7pt; color: #999; text-transform: uppercase; letter-spacing: 0.08em;
+      font-weight: 700; margin-right: 4px; align-self: center;
+    }
     .pbtn, .ybtn {
-      background: #1a1a1a; color: #777; border: 1px solid #2a2a2a; border-radius: 6px;
-      padding: 7px 16px; font-size: 0.82rem; cursor: pointer; transition: all 0.15s;
-      font-weight: 500;
+      background: #fff; color: #555; border: 1px solid #ccc;
+      padding: 4px 12px; font-size: 8pt; cursor: pointer;
+      font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500;
+      transition: all 0.1s;
     }
-    .pbtn:hover, .ybtn:hover { border-color: #555; color: #ccc; }
-    .pbtn.active { background: #4fc3f7; color: #111; border-color: #4fc3f7; font-weight: 600; }
-
-    .ybtn.active.y0 { background: rgba(79,195,247,0.18); color: #4fc3f7; border-color: #4fc3f7; }
-    .ybtn.active.y1 { background: rgba(255,183,77,0.18); color: #ffb74d; border-color: #ffb74d; }
-    .ybtn.active.y2 { background: rgba(102,187,106,0.18); color: #66bb6a; border-color: #66bb6a; }
-    .ybtn.active.y3 { background: rgba(206,147,216,0.18); color: #ce93d8; border-color: #ce93d8; }
-    .ybtn.active.y4 { background: rgba(239,83,80,0.18); color: #ef5350; border-color: #ef5350; }
+    .pbtn:hover, .ybtn:hover { border-color: #888; color: #222; }
+    .pbtn.active {
+      background: #222; color: #fff; border-color: #222; font-weight: 700;
+    }
+    .ybtn.active.y0 { background: #e3f2fd; color: #0277bd; border-color: #0277bd; font-weight: 700; }
+    .ybtn.active.y1 { background: #fff3e0; color: #e65100; border-color: #e65100; font-weight: 700; }
+    .ybtn.active.y2 { background: #e8f5e9; color: #2e7d32; border-color: #2e7d32; font-weight: 700; }
+    .ybtn.active.y3 { background: #f3e5f5; color: #7b1fa2; border-color: #7b1fa2; font-weight: 700; }
+    .ybtn.active.y4 { background: #ffebee; color: #c62828; border-color: #c62828; font-weight: 700; }
 
     /* Loading / Error */
-    #loading { text-align: center; padding: 32px; color: #888; font-size: 0.9rem; }
+    #loading { text-align: center; padding: 24px; color: #888; font-size: 9pt; }
     .spinner {
-      width: 20px; height: 20px; border: 3px solid #333; border-top-color: #4fc3f7;
+      width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #0277bd;
       border-radius: 50%; animation: spin 0.8s linear infinite;
-      display: inline-block; vertical-align: middle; margin-right: 8px;
+      display: inline-block; vertical-align: middle; margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #error { background: #2a1a1a; border: 1px solid #ef5350; border-radius: 8px; padding: 10px 14px; color: #ef5350; font-size: 0.85rem; margin-bottom: 12px; }
+    #error { background: #fff5f5; border: 1px solid #c62828; padding: 6px 10px; color: #c62828; font-size: 8.5pt; margin-bottom: 10px; }
 
-    /* Summary cards */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 20px; }
-    .card { background: #1a1a1a; border: 1px solid #222; border-radius: 8px; padding: 10px 12px; }
-    .card-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 6px; }
-    .card-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; }
-    .card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
-    .card-val { font-size: 1.2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-    .card-val.solo { font-size: 1.5rem; color: #e0e0e0; }
+    /* Summary table */
+    .summary-tbl { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5pt; }
+    .summary-tbl th {
+      background: #222; color: #fff; text-transform: uppercase; font-size: 7pt;
+      letter-spacing: 0.06em; font-weight: 700; padding: 5px 8px; text-align: right;
+    }
+    .summary-tbl th:first-child { text-align: left; }
+    .summary-tbl td {
+      padding: 4px 8px; text-align: right; font-weight: 600;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .summary-tbl td:first-child { text-align: left; font-weight: 700; }
+    .summary-tbl tr:nth-child(even) td { background: #f5f5f5; }
+    .summary-tbl .yr-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      margin-right: 5px; vertical-align: middle;
+    }
+
+    /* Section headers */
+    .sec-hdr {
+      font-size: 8pt; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #222; margin: 14px 0 6px;
+      border-bottom: 1px solid #ddd; padding-bottom: 3px;
+    }
 
     /* Charts */
-    .chart-section { margin-bottom: 20px; }
-    .chart-wrap { position: relative; height: 240px; background: #1a1a1a; border-radius: 8px; padding: 6px; }
+    .chart-wrap { position: relative; height: 220px; margin-bottom: 16px; }
 
-    /* Table */
-    .table-section { margin-bottom: 20px; }
+    /* Data tables */
+    .table-section { margin-bottom: 16px; }
     .table-section summary {
-      cursor: pointer; font-size: 0.8rem; color: #666; padding: 8px 0;
-      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer; font-size: 8pt; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #222; padding: 6px 0;
+      border-bottom: 1px solid #ddd;
     }
-    .table-section summary:hover { color: #4fc3f7; }
-    .tbl-label { font-size: 0.8rem; margin: 12px 0 4px; font-weight: 600; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-bottom: 10px; }
-    th { text-align: left; padding: 5px 7px; border-bottom: 2px solid #333; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: #888; }
-    td { padding: 4px 7px; border-bottom: 1px solid #1e1e1e; }
-    tr:hover td { background: #181818; }
-    .wx-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 0.68rem; background: #1e1e1e; }
+    .table-section summary:hover { color: #0277bd; }
+    .tbl-yr {
+      font-size: 8pt; font-weight: 700; margin: 10px 0 3px;
+      padding: 3px 8px; display: inline-block;
+    }
+    table.daily { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 8px; }
+    table.daily th {
+      background: #222; color: #fff; text-transform: uppercase; font-size: 6.5pt;
+      letter-spacing: 0.06em; font-weight: 700; padding: 4px 6px; text-align: left;
+    }
+    table.daily td { padding: 3px 6px; }
+    table.daily tbody tr:nth-child(even) td { background: #f5f5f5; }
+    table.daily tbody tr:hover td { background: #e8f4e8; }
+    .wx-tag { font-size: 7pt; font-weight: 600; }
+    .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
 
-    footer { text-align: center; padding: 24px; color: #444; font-size: 0.72rem; }
-    footer a { color: #4fc3f7; text-decoration: none; }
+    footer { text-align: center; padding: 16px; color: #aaa; font-size: 7pt; border-top: 1px solid #eee; margin-top: 12px; }
+    footer a { color: #0277bd; text-decoration: none; }
 
     @media (max-width: 600px) {
-      body { padding: 10px; }
-      .card-grid { grid-template-columns: repeat(2, 1fr); }
-      .chart-wrap { height: 200px; }
-      th, td { padding: 3px 4px; }
+      body { padding: 8px; }
+      .chart-wrap { height: 180px; }
+      .summary-tbl { font-size: 8pt; }
+      table.daily { font-size: 7.5pt; }
     }
   </style>
 </head>
@@ -104,8 +137,8 @@
   <header>
     <h1>Weather History</h1>
     <div>
-      <span id="loc-name" style="color:#ccc;font-size:0.9rem"></span>
-      <button class="loc-btn" onclick="toggleLoc()">[change]</button>
+      <span class="loc-name" id="loc-name"></span>
+      <button class="loc-btn" onclick="toggleLoc()">change</button>
     </div>
     <div id="loc-search" class="hidden">
       <input type="text" id="loc-input" placeholder="Search city..." oninput="debounceGeo()" onkeydown="if(event.key==='Escape')toggleLoc()">
@@ -113,24 +146,26 @@
     </div>
   </header>
 
-  <div class="btn-row" id="periods">
-    <label>Period</label>
+  <div class="ctrl-row" id="periods">
+    <span class="lbl">Period</span>
     <button class="pbtn active" onclick="setPeriod(7)">7 Days</button>
     <button class="pbtn" onclick="setPeriod(10)">10 Days</button>
     <button class="pbtn" onclick="setPeriod(20)">20 Days</button>
     <button class="pbtn" onclick="setPeriod(30)">30 Days</button>
   </div>
-
-  <div class="btn-row" id="years"></div>
+  <div class="ctrl-row" id="years"></div>
 
   <div id="loading" class="hidden"><span class="spinner"></span> Loading...</div>
   <div id="error" class="hidden"></div>
 
   <div id="results" class="hidden">
-    <div class="card-grid" id="summary"></div>
-    <div class="chart-section"><h3>Temperature</h3><div class="chart-wrap"><canvas id="cTemp"></canvas></div></div>
-    <div class="chart-section"><h3>Precipitation</h3><div class="chart-wrap"><canvas id="cPrecip"></canvas></div></div>
-    <div class="chart-section"><h3>Humidity</h3><div class="chart-wrap"><canvas id="cHumid"></canvas></div></div>
+    <div id="summary"></div>
+    <div class="sec-hdr">Temperature</div>
+    <div class="chart-wrap"><canvas id="cTemp"></canvas></div>
+    <div class="sec-hdr">Precipitation</div>
+    <div class="chart-wrap"><canvas id="cPrecip"></canvas></div>
+    <div class="sec-hdr">Humidity</div>
+    <div class="chart-wrap"><canvas id="cHumid"></canvas></div>
     <details class="table-section"><summary>Daily Data</summary><div id="tables"></div></details>
   </div>
 </div>
@@ -149,11 +184,11 @@ const THIS_YEAR = NOW.getFullYear();
 const YEARS = [THIS_YEAR, THIS_YEAR-1, THIS_YEAR-2, THIS_YEAR-3, THIS_YEAR-4];
 
 const C = [
-  { m:'#4fc3f7', f:'rgba(79,195,247,0.10)',  d:'#0288d1' },
-  { m:'#ffb74d', f:'rgba(255,183,77,0.10)',   d:'#f57c00' },
-  { m:'#66bb6a', f:'rgba(102,187,106,0.10)',  d:'#388e3c' },
-  { m:'#ce93d8', f:'rgba(206,147,216,0.10)',  d:'#8e24aa' },
-  { m:'#ef5350', f:'rgba(239,83,80,0.10)',    d:'#c62828' },
+  { m:'#0277bd', f:'rgba(2,119,189,0.08)',   d:'#01579b' },
+  { m:'#e65100', f:'rgba(230,81,0,0.08)',     d:'#bf360c' },
+  { m:'#2e7d32', f:'rgba(46,125,50,0.08)',    d:'#1b5e20' },
+  { m:'#7b1fa2', f:'rgba(123,31,162,0.08)',   d:'#4a148c' },
+  { m:'#c62828', f:'rgba(198,40,40,0.08)',    d:'#b71c1c' },
 ];
 
 const WX = {
@@ -165,9 +200,9 @@ const WX = {
   95:'Thunderstorm',96:'T-Storm+Hail',99:'Hvy T-Storm+Hail'
 };
 function wxColor(c) {
-  if (c<=0) return '#ffd54f'; if (c<=3) return '#bdbdbd'; if (c<=48) return '#78909c';
-  if (c<=67) return '#29b6f6'; if (c<=77) return '#e0e0e0'; if (c<=82) return '#29b6f6';
-  return '#ff8a65';
+  if (c<=0) return '#f57f17'; if (c<=3) return '#757575'; if (c<=48) return '#546e7a';
+  if (c<=67) return '#0277bd'; if (c<=77) return '#455a64'; if (c<=82) return '#0277bd';
+  return '#e65100';
 }
 
 // ─── State ───
@@ -211,8 +246,6 @@ async function fetchWx(start, end) {
     daily:DAILY, hourly:HOURLY, timezone:'auto',
     temperature_unit:'fahrenheit', precipitation_unit:'inch'
   }).toString();
-
-  // Try forecast for recent, archive for older
   const endDaysAgo = Math.floor((NOW - new Date(end+'T12:00:00')) / 86400000);
   if (endDaysAgo < 7) {
     try {
@@ -232,12 +265,8 @@ async function fetchWx(start, end) {
 async function refresh() {
   if (!activeYears.size) { hideResults(); return; }
   showLoading(true); hideError();
-
-  // Compute base date window (ending yesterday)
   const baseEnd = new Date(NOW); baseEnd.setDate(baseEnd.getDate()-1);
   const baseStart = new Date(baseEnd); baseStart.setDate(baseStart.getDate()-period+1);
-  const sm=baseStart.getMonth(), sd=baseStart.getDate(), em=baseEnd.getMonth(), ed=baseEnd.getDate();
-
   try {
     const sorted = [...activeYears].sort((a,b)=>b-a);
     const results = await Promise.all(sorted.map(yr => {
@@ -254,7 +283,6 @@ async function refresh() {
     showLoading(false); showError(e.message);
   }
 }
-
 function scheduleRefresh() { clearTimeout(refreshTimer); refreshTimer = setTimeout(refresh, 150); }
 
 // ─── Controls ───
@@ -263,17 +291,14 @@ function setPeriod(n) {
   document.querySelectorAll('.pbtn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===n));
   scheduleRefresh();
 }
-
 function toggleYear(yr) {
   if (activeYears.has(yr)) { if (activeYears.size > 1) activeYears.delete(yr); }
   else activeYears.add(yr);
   renderYearBtns();
   scheduleRefresh();
 }
-
 function renderYearBtns() {
-  const el = document.getElementById('years');
-  el.innerHTML = '<label>Years</label>' + YEARS.map((yr,i) =>
+  document.getElementById('years').innerHTML = '<span class="lbl">Years</span>' + YEARS.map((yr,i) =>
     `<button class="ybtn y${i}${activeYears.has(yr)?' active':''}" onclick="toggleYear(${yr})">${yr}</button>`
   ).join('');
 }
@@ -315,11 +340,13 @@ function showError(m){const e=document.getElementById('error');e.textContent=m;e
 function hideError(){document.getElementById('error').classList.add('hidden');}
 
 function formatDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function shortDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function avg(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b)/v.length:null;}
 function sum(a){const v=a.filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b):null;}
 function cntNZ(a){return a.filter(x=>x!=null&&x>0).length;}
+function fv(v,dec,u){return v!=null?(dec?v.toFixed(dec):Math.round(v))+u:'--';}
 
-// ─── Render all ───
+// ─── Render ───
 function renderAll() {
   const sorted = [...activeYears].sort((a,b)=>b-a);
   renderSummary(sorted);
@@ -328,31 +355,26 @@ function renderAll() {
 }
 
 function renderSummary(sorted) {
-  const multi = sorted.length > 1;
-  const stats = [
-    {t:'Avg High',  k:'high',     fn:avg,  u:'\u00b0F', dec:1},
-    {t:'Avg Low',   k:'low',      fn:avg,  u:'\u00b0F', dec:1},
-    {t:'Total Precip', k:'precip',fn:sum,  u:'"',       dec:2},
-    {t:'Rain Days', k:'rain',     fn:cntNZ,u:'',        dec:0},
-    {t:'Snow Days', k:'snow',     fn:cntNZ,u:'',        dec:0},
-    {t:'Avg Humidity',k:'humidity',fn:avg, u:'%',       dec:0},
+  const cols = [
+    {t:'Avg High',k:'high',fn:avg,u:'\u00b0F',dec:1},
+    {t:'Avg Low',k:'low',fn:avg,u:'\u00b0F',dec:1},
+    {t:'Precip',k:'precip',fn:sum,u:'"',dec:2},
+    {t:'Rain Days',k:'rain',fn:cntNZ,u:'',dec:0},
+    {t:'Snow Days',k:'snow',fn:cntNZ,u:'',dec:0},
+    {t:'Humidity',k:'humidity',fn:avg,u:'%',dec:0},
   ];
-  document.getElementById('summary').innerHTML = stats.map(s => {
-    const rows = sorted.map(yr => {
-      const d = yearData[yr]; if(!d) return null;
-      const v = s.fn(d[s.k]);
-      const str = v!=null ? (s.dec?v.toFixed(s.dec):Math.round(v))+s.u : '--';
-      const ci = YEARS.indexOf(yr);
-      return {yr, str, ci};
-    }).filter(Boolean);
-    if (!multi && rows.length===1) {
-      return `<div class="card"><div class="card-title">${s.t}</div><div class="card-val solo">${rows[0].str}</div></div>`;
-    }
-    const inner = rows.map(r =>
-      `<div class="card-row"><span class="card-dot" style="background:${C[r.ci].m}"></span><span class="card-val" style="color:${C[r.ci].m}">${r.str}</span><span style="color:#555;font-size:0.7rem;margin-left:4px">${r.yr}</span></div>`
-    ).join('');
-    return `<div class="card"><div class="card-title">${s.t}</div>${inner}</div>`;
-  }).join('');
+  let h = '<table class="summary-tbl"><thead><tr><th>Year</th>';
+  cols.forEach(c => h += `<th>${c.t}</th>`);
+  h += '</tr></thead><tbody>';
+  sorted.forEach(yr => {
+    const d = yearData[yr]; if(!d) return;
+    const ci = YEARS.indexOf(yr);
+    h += `<tr><td><span class="yr-dot" style="background:${C[ci].m}"></span>${yr}</td>`;
+    cols.forEach(c => h += `<td>${fv(c.fn(d[c.k]),c.dec,c.u)}</td>`);
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  document.getElementById('summary').innerHTML = h;
 }
 
 // ─── Charts ───
@@ -361,21 +383,22 @@ function destroyCharts(){[cTemp,cPrecip,cHumid].forEach(c=>{if(c)c.destroy()});c
 function xLabels() {
   const ref = yearData[Object.keys(yearData)[0]];
   if(!ref) return [];
-  return ref.dates.map(d=>{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});});
+  return ref.dates.map(d => shortDate(d));
 }
 
-function darkOpts(yLabel) {
+function chartOpts(yLabel) {
   return {
     responsive:true, maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     plugins:{
-      legend:{labels:{color:'#aaa',boxWidth:10,font:{size:10}}},
-      tooltip:{backgroundColor:'#1a1a1a',titleColor:'#e0e0e0',bodyColor:'#ccc',borderColor:'#333',borderWidth:1}
+      legend:{labels:{color:'#333',boxWidth:10,font:{size:9,family:'Helvetica Neue, Arial'}}},
+      tooltip:{backgroundColor:'#fff',titleColor:'#222',bodyColor:'#555',borderColor:'#ccc',borderWidth:1,
+        titleFont:{family:'Helvetica Neue, Arial'},bodyFont:{family:'Helvetica Neue, Arial'}}
     },
     scales:{
-      x:{ticks:{color:'#666',font:{size:10},maxRotation:45},grid:{color:'#1e1e1e'}},
-      y:{ticks:{color:'#666',font:{size:10}},grid:{color:'#1e1e1e'},
-         title:{display:!!yLabel,text:yLabel,color:'#666',font:{size:10}}}
+      x:{ticks:{color:'#888',font:{size:8,family:'Helvetica Neue, Arial'},maxRotation:45},grid:{color:'#eee'}},
+      y:{ticks:{color:'#888',font:{size:8,family:'Helvetica Neue, Arial'}},grid:{color:'#eee'},
+         title:{display:!!yLabel,text:yLabel,color:'#888',font:{size:9,family:'Helvetica Neue, Arial'}}}
     }
   };
 }
@@ -384,30 +407,27 @@ function renderCharts(sorted) {
   destroyCharts();
   const labels = xLabels();
 
-  // Temperature: solid high, dashed low per year
   const tempDS = [];
   sorted.forEach(yr => {
     const ci = YEARS.indexOf(yr); const d = yearData[yr]; if(!d) return;
     tempDS.push(
       {label:`${yr} High`,data:d.high,borderColor:C[ci].m,borderWidth:2,pointRadius:1.5,tension:0.3,fill:false},
-      {label:`${yr} Low`, data:d.low, borderColor:C[ci].d,borderWidth:1.5,pointRadius:1.5,tension:0.3,borderDash:[4,3],fill:false}
+      {label:`${yr} Low`, data:d.low, borderColor:C[ci].m+'88',borderWidth:1.5,pointRadius:1.5,tension:0.3,borderDash:[4,3],fill:false}
     );
   });
-  cTemp = new Chart(document.getElementById('cTemp'),{type:'line',data:{labels,datasets:tempDS},options:darkOpts('\u00b0F')});
+  cTemp = new Chart(document.getElementById('cTemp'),{type:'line',data:{labels,datasets:tempDS},options:chartOpts('\u00b0F')});
 
-  // Precipitation: grouped bars
   const precipDS = sorted.map(yr => {
     const ci=YEARS.indexOf(yr); const d=yearData[yr]; if(!d) return null;
-    return {label:`${yr}`,data:d.precip,backgroundColor:C[ci].m+'99',borderColor:C[ci].m,borderWidth:1,borderRadius:2};
+    return {label:`${yr}`,data:d.precip,backgroundColor:C[ci].m+'66',borderColor:C[ci].m,borderWidth:1,borderRadius:2};
   }).filter(Boolean);
-  cPrecip = new Chart(document.getElementById('cPrecip'),{type:'bar',data:{labels,datasets:precipDS},options:darkOpts('inches')});
+  cPrecip = new Chart(document.getElementById('cPrecip'),{type:'bar',data:{labels,datasets:precipDS},options:chartOpts('inches')});
 
-  // Humidity: lines
   const humDS = sorted.map(yr => {
     const ci=YEARS.indexOf(yr); const d=yearData[yr]; if(!d) return null;
     return {label:`${yr}`,data:d.humidity,borderColor:C[ci].m,borderWidth:2,pointRadius:1.5,tension:0.3,fill:false};
   }).filter(Boolean);
-  const hOpts = darkOpts('%');
+  const hOpts = chartOpts('%');
   hOpts.scales.y.min=0; hOpts.scales.y.max=100;
   cHumid = new Chart(document.getElementById('cHumid'),{type:'line',data:{labels,datasets:humDS},options:hOpts});
 }
@@ -417,18 +437,20 @@ function renderTables(sorted) {
   document.getElementById('tables').innerHTML = sorted.map(yr => {
     const ci=YEARS.indexOf(yr); const d=yearData[yr]; if(!d) return '';
     const hasSnow = d.snow.some(v=>v!=null&&v>0);
-    let h = `<div class="tbl-label" style="color:${C[ci].m}">${yr}</div><table><thead><tr>`;
-    h += '<th>Date</th><th>Cond</th><th>Hi</th><th>Lo</th><th>Precip</th>';
+    let h = `<div class="tbl-yr" style="color:${C[ci].m};border-left:3px solid ${C[ci].m}">${yr}</div>`;
+    h += '<table class="daily"><thead><tr>';
+    h += '<th>Date</th><th>Condition</th><th>Hi</th><th>Lo</th><th>Precip</th>';
     if(hasSnow) h+='<th>Snow</th>';
     h += '<th>Hum</th></tr></thead><tbody>';
     d.dates.forEach((_,i)=>{
       const wx=WX[d.wxCode[i]]||'--', wc=wxColor(d.wxCode[i]);
-      h+=`<tr><td>${formatDate(d.dates[i])}</td><td><span class="wx-badge" style="color:${wc}">${wx}</span></td>`;
-      h+=`<td class="data">${d.high[i]!=null?d.high[i].toFixed(1)+'\u00b0':'--'}</td>`;
-      h+=`<td class="data">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}</td>`;
-      h+=`<td class="data">${d.precip[i]!=null?d.precip[i].toFixed(2)+'"':'--'}</td>`;
-      if(hasSnow) h+=`<td class="data">${d.snow[i]>0?d.snow[i].toFixed(1)+'"':'--'}</td>`;
-      h+=`<td class="data">${d.humidity[i]!=null?d.humidity[i]+'%':'--'}</td></tr>`;
+      h+=`<tr><td>${formatDate(d.dates[i])}</td>`;
+      h+=`<td><span class="wx-tag" style="color:${wc}">${wx}</span></td>`;
+      h+=`<td class="num">${d.high[i]!=null?d.high[i].toFixed(1)+'\u00b0':'--'}</td>`;
+      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}</td>`;
+      h+=`<td class="num">${d.precip[i]!=null?d.precip[i].toFixed(2)+'"':'--'}</td>`;
+      if(hasSnow) h+=`<td class="num">${d.snow[i]>0?d.snow[i].toFixed(1)+'"':'--'}</td>`;
+      h+=`<td class="num">${d.humidity[i]!=null?d.humidity[i]+'%':'--'}</td></tr>`;
     });
     h+='</tbody></table>';
     return h;
