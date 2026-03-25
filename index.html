@@ -472,7 +472,7 @@ function renderTables(sorted) {
       h+=`<tr${isFrost?' class="frost"':''}><td>${formatDate(d.dates[i])}</td>`;
       h+=`<td><span class="wx-tag" style="color:${wc}">${wx}</span></td>`;
       h+=`<td class="num">${d.high[i]!=null?d.high[i].toFixed(1)+'\u00b0':'--'}</td>`;
-      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}${isFrost?'<span class="frost-tag">frost</span>':''}</td>`;
+      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}</td>`;
       h+=`<td class="num">${d.precip[i]!=null?d.precip[i].toFixed(2)+'"':'--'}</td>`;
       if(hasSnow) h+=`<td class="num">${d.snow[i]>0?d.snow[i].toFixed(1)+'"':'--'}</td>`;
       h+=`<td class="num">${d.humidity[i]!=null?d.humidity[i]+'%':'--'}</td></tr>`;
