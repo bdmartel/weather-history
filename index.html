@@ -114,7 +114,7 @@
     table.daily td { padding: 3px 6px; }
     table.daily tbody tr:nth-child(even) td { background: #f5f5f5; }
     table.daily tbody tr:hover td { background: #e8f4e8; }
-    table.daily tbody tr.frost td { color: #0277bd; }
+    .freeze { color: #0277bd; font-weight: 700; }
     .frost-tag { font-size: 6pt; font-weight: 700; color: #0277bd; text-transform: uppercase; margin-left: 3px; }
     .wx-tag { font-size: 7pt; font-weight: 600; }
     .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
@@ -467,11 +467,11 @@ function renderTables(sorted) {
     h += '<th>Hum</th></tr></thead><tbody>';
     d.dates.forEach((_,i)=>{
       const wx=WX[d.wxCode[i]]||'--', wc=wxColor(d.wxCode[i]);
-      const isFrost = d.low[i]!=null && d.low[i]<=32;
-      h+=`<tr${isFrost?' class="frost"':''}><td>${formatDate(d.dates[i])}</td>`;
+      h+=`<tr><td>${formatDate(d.dates[i])}</td>`;
       h+=`<td><span class="wx-tag" style="color:${wc}">${wx}</span></td>`;
-      h+=`<td class="num">${d.high[i]!=null?d.high[i].toFixed(1)+'\u00b0':'--'}</td>`;
-      h+=`<td class="num">${d.low[i]!=null?d.low[i].toFixed(1)+'\u00b0':'--'}</td>`;
+      const hi=d.high[i], lo=d.low[i];
+      h+=`<td class="num${hi!=null&&hi<=32?' freeze':''}">${hi!=null?hi.toFixed(1)+'\u00b0':'--'}</td>`;
+      h+=`<td class="num${lo!=null&&lo<=32?' freeze':''}">${lo!=null?lo.toFixed(1)+'\u00b0':'--'}</td>`;
       h+=`<td class="num">${d.precip[i]!=null?d.precip[i].toFixed(2)+'"':'--'}</td>`;
       if(hasSnow) h+=`<td class="num">${d.snow[i]>0?d.snow[i].toFixed(1)+'"':'--'}</td>`;
       h+=`<td class="num">${d.humidity[i]!=null?d.humidity[i]+'%':'--'}</td></tr>`;
