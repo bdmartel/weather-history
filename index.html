@@ -119,6 +119,18 @@
     .wx-tag { font-size: 7pt; font-weight: 600; }
     .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 500; }
 
+    .date-range {
+      font-size: 8pt; color: #888; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .date-range .dates { font-weight: 600; color: #555; }
+    .date-range .hint { font-size: 7pt; color: #bbb; }
+    .scrub-btn {
+      background: none; border: 1px solid #ddd; color: #888; cursor: pointer;
+      padding: 1px 8px; font-size: 9pt; line-height: 1.2;
+    }
+    .scrub-btn:hover { border-color: #888; color: #222; }
+
     footer { text-align: center; padding: 16px; color: #aaa; font-size: 7pt; border-top: 1px solid #eee; margin-top: 12px; }
     footer a { color: #0277bd; text-decoration: none; }
 
@@ -156,6 +168,8 @@
     <button class="pbtn" onclick="setPeriod(365)">1 Year</button>
   </div>
   <div class="ctrl-row" id="years"></div>
+
+  <div class="date-range" id="date-range"></div>
 
   <div id="loading" class="hidden"><span class="spinner"></span> Loading...</div>
   <div id="error" class="hidden"></div>
@@ -219,13 +233,30 @@ function wxColor(c) {
 let loc = JSON.parse(localStorage.getItem('wx-loc')) || { name:'Wilton, NH', lat:42.8406, lon:-71.7356 };
 let period = 7;
 let activeYears = new Set([THIS_YEAR]);
+let scrubOffset = 0;
 let yearData = {};
 let cTemp=null, cPrecip=null, cHumid=null;
 let geoTimer=null, refreshTimer=null;
 const cache = {};
 
+// ─── URL hash ───
+function loadHash() {
+  const h = location.hash.slice(1); if(!h) return;
+  const p = new URLSearchParams(h);
+  if(p.has('p')) period = parseInt(p.get('p'))||7;
+  if(p.has('y')) activeYears = new Set(p.get('y').split(',').map(Number).filter(n=>!isNaN(n)&&n>=2015&&n<=THIS_YEAR));
+  if(p.has('o')) scrubOffset = parseInt(p.get('o'))||0;
+  if(!activeYears.size) activeYears.add(THIS_YEAR);
+}
+function syncHash() {
+  const yrs = [...activeYears].sort((a,b)=>b-a).join(',');
+  history.replaceState(null,null,`#p=${period}&y=${yrs}&o=${scrubOffset}`);
+}
+
 // ─── Init ───
+loadHash();
 document.getElementById('loc-name').textContent = loc.name;
+document.querySelectorAll('.pbtn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===period));
 renderYearBtns();
 refresh();
 
@@ -274,9 +305,17 @@ async function fetchWx(start, end) {
 // ─── Core refresh ───
 async function refresh() {
   if (!activeYears.size) { hideResults(); return; }
-  showLoading(true); hideError();
-  const baseEnd = new Date(NOW); baseEnd.setDate(baseEnd.getDate()-1);
+  showLoading(true); hideError(); syncHash();
+  const baseEnd = new Date(NOW); baseEnd.setDate(baseEnd.getDate()-1-scrubOffset);
   const baseStart = new Date(baseEnd); baseStart.setDate(baseStart.getDate()-period+1);
+
+  // Show date range
+  const rangeEl = document.getElementById('date-range');
+  rangeEl.innerHTML = `<button class="scrub-btn" onclick="scrub(1)">\u25C0</button>`
+    +`<span class="dates">${shortDate(fmt(baseStart))} \u2013 ${shortDate(fmt(baseEnd))}</span>`
+    +`<button class="scrub-btn" onclick="scrub(-1)"${scrubOffset<=0?' disabled':''}>\u25B6</button>`
+    +`<span class="hint">\u2190\u2192 arrow keys to scrub</span>`;
+
   try {
     const sorted = [...activeYears].sort((a,b)=>b-a);
     const results = await Promise.all(sorted.map(yr => {
@@ -295,10 +334,23 @@ async function refresh() {
 }
 function scheduleRefresh() { clearTimeout(refreshTimer); refreshTimer = setTimeout(refresh, 150); }
 
+// ─── Scrub ───
+function scrub(dir) {
+  scrubOffset = Math.max(0, scrubOffset + dir * period);
+  scheduleRefresh();
+}
+document.addEventListener('keydown', e => {
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowLeft') { scrub(1); e.preventDefault(); }
+  if(e.key==='ArrowRight') { scrub(-1); e.preventDefault(); }
+});
+
 // ─── Controls ───
 function setPeriod(n) {
   period = n;
-  document.querySelectorAll('.pbtn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===n));
+  document.querySelectorAll('.pbtn').forEach(b => {
+    const v = b.textContent.trim(); b.classList.toggle('active', v===n+'d'||v===n+' Days'||v==='1 Year'&&n===365||parseInt(v)===n);
+  });
   scheduleRefresh();
 }
 function toggleYear(yr) {
@@ -362,6 +414,20 @@ function minV(a){const v=a.filter(x=>x!=null);return v.length?Math.min(...v):nul
 function frostCt(a){return a.filter(x=>x!=null&&x<=32).length;}
 function fv(v,dec,u){return v!=null?(dec?v.toFixed(dec):Math.round(v))+u:'--';}
 
+function lastFrostDate(d){
+  for(let i=d.dates.length-1;i>=0;i--) if(d.low[i]!=null&&d.low[i]<=32) return shortDate(d.dates[i]);
+  return '--';
+}
+function firstFrostDate(d){
+  for(let i=0;i<d.dates.length;i++) if(d.low[i]!=null&&d.low[i]<=32) return shortDate(d.dates[i]);
+  return '--';
+}
+function dryStreak(d){
+  let max=0,cur=0;
+  d.precip.forEach(v=>{if(v==null||v===0){cur++;}else{max=Math.max(max,cur);cur=0;}});
+  return Math.max(max,cur);
+}
+
 // ─── Render ───
 function renderAll() {
   const sorted = [...activeYears].sort((a,b)=>b-a);
@@ -377,7 +443,10 @@ function renderSummary(sorted) {
     {t:'Avg Low',k:'low',fn:avg,u:'\u00b0F',dec:1},
     {t:'Lowest Low',k:'low',fn:minV,u:'\u00b0F',dec:1},
     {t:'Days \u226432\u00b0',k:'low',fn:frostCt,u:'',dec:0},
+    {t:'First \u226432\u00b0',raw:d=>firstFrostDate(d)},
+    {t:'Last \u226432\u00b0',raw:d=>lastFrostDate(d)},
     {t:'Precip',k:'precip',fn:sum,u:'"',dec:2},
+    {t:'Max Dry',raw:d=>dryStreak(d)+'d'},
     {t:'Rain Days',k:'rain',fn:cntNZ,u:'',dec:0},
     {t:'Snow Days',k:'snow',fn:cntNZ,u:'',dec:0},
     {t:'Humidity',k:'humidity',fn:avg,u:'%',dec:0},
@@ -390,6 +459,7 @@ function renderSummary(sorted) {
     const ci = YEARS.indexOf(yr);
     h += `<tr><td><span class="yr-dot" style="background:${C[ci].m}"></span>${yr}</td>`;
     cols.forEach(c => {
+      if(c.raw) { h += `<td>${c.raw(d)}</td>`; return; }
       const v = c.fn(d[c.k]);
       const isTemp = c.u === '\u00b0F';
       const cls = isTemp && v != null && v <= 32 ? ' class="freeze"' : '';
