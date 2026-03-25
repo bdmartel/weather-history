@@ -128,16 +128,19 @@
     .date-range .dates { font-weight: 600; color: #555; }
     .date-range .hint { font-size: 7pt; color: #bbb; }
     .scrub-btn {
-      background: none; border: 1px solid #ddd; color: #888; cursor: pointer;
-      padding: 1px 8px; font-size: 9pt; line-height: 1.2;
+      background: #f5f5f5; border: 1px solid #ddd; color: #555; cursor: pointer;
+      padding: 10px 18px; font-size: 12pt; line-height: 1;
+      min-width: 48px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .scrub-btn:hover { border-color: #888; color: #222; }
+    .scrub-btn:hover, .scrub-btn:active { background: #e0e0e0; border-color: #888; color: #222; }
 
     footer { text-align: center; padding: 16px; color: #aaa; font-size: 7pt; border-top: 1px solid #eee; margin-top: 12px; }
     footer a { color: #0277bd; text-decoration: none; }
 
     @media (max-width: 600px) {
       body { padding: 8px; }
+      .pbtn, .ybtn { padding: 8px 14px; font-size: 9pt; min-height: 38px; }
       .chart-wrap { height: 180px; }
       .summary-tbl { font-size: 8pt; }
       table.daily { font-size: 7.5pt; }
