@@ -67,8 +67,8 @@
     #error { background: #fff5f5; border: 1px solid #c62828; padding: 6px 10px; color: #c62828; font-size: 8.5pt; margin-bottom: 10px; }
 
     /* Summary table */
-    .summary-wrap { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
-    .summary-tbl { border-collapse: collapse; font-size: 8.5pt; white-space: nowrap; min-width: 100%; }
+    .summary-wrap { margin-bottom: 16px; }
+    .summary-tbl { border-collapse: collapse; font-size: 8.5pt; white-space: nowrap; width: 100%; }
     .summary-tbl th {
       background: #222; color: #fff; text-transform: uppercase; font-size: 7pt;
       letter-spacing: 0.06em; font-weight: 700; padding: 5px 8px; text-align: right;
@@ -154,8 +154,29 @@
       body { padding: 8px; }
       .pbtn, .ybtn { padding: 8px 14px; font-size: 9pt; min-height: 38px; }
       .chart-wrap { height: 180px; }
-      .summary-tbl { font-size: 8pt; }
       table.daily { font-size: 7.5pt; }
+
+      .summary-tbl { white-space: normal; }
+      .summary-tbl thead { display: none; }
+      .summary-tbl tbody tr {
+        display: block; margin-bottom: 10px; padding: 8px 10px;
+        border: 1px solid #ddd; border-left: 3px solid #888;
+      }
+      body.dark .summary-tbl tbody tr { border-color: #333; }
+      .summary-tbl tbody td {
+        display: flex; justify-content: space-between; align-items: baseline;
+        padding: 2px 0; text-align: right; border: none; background: none !important;
+      }
+      .summary-tbl tbody td::before {
+        content: attr(data-label);
+        font-size: 7pt; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.04em; color: #999; text-align: left; margin-right: 8px;
+      }
+      .summary-tbl tbody td:first-child {
+        font-size: 9pt; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #eee;
+      }
+      .summary-tbl tbody td:first-child::before { display: none; }
+      body.dark .summary-tbl tbody td:first-child { border-bottom-color: #333; }
     }
   </style>
 </head>
@@ -366,15 +387,6 @@ document.addEventListener('keydown', e => {
   if(e.key==='ArrowRight') { scrub(-1); e.preventDefault(); }
 });
 
-// Swipe to scrub on mobile
-let touchX=null;
-document.getElementById('results').addEventListener('touchstart', e => { touchX=e.touches[0].clientX; }, {passive:true});
-document.getElementById('results').addEventListener('touchend', e => {
-  if(touchX===null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  touchX=null;
-  if(Math.abs(dx)>60) scrub(dx<0 ? 1 : -1);
-}, {passive:true});
 
 // ─── Controls ───
 function setPeriod(n) {
@@ -487,13 +499,13 @@ function renderSummary(sorted) {
   sorted.forEach(yr => {
     const d = yearData[yr]; if(!d) return;
     const ci = YEARS.indexOf(yr);
-    h += `<tr><td><span class="yr-dot" style="background:${C[ci].m}"></span>${yr}</td>`;
+    h += `<tr style="border-left-color:${C[ci].m}"><td><span class="yr-dot" style="background:${C[ci].m}"></span>${yr}</td>`;
     cols.forEach(c => {
-      if(c.raw) { h += `<td>${c.raw(d)}</td>`; return; }
+      if(c.raw) { h += `<td data-label="${c.t}">${c.raw(d)}</td>`; return; }
       const v = c.fn(d[c.k]);
       const isTemp = c.u === '\u00b0F';
       const cls = isTemp && v != null && v <= 32 ? ' class="freeze"' : '';
-      h += `<td${cls}>${fv(v,c.dec,c.u)}</td>`;
+      h += `<td data-label="${c.t}"${cls}>${fv(v,c.dec,c.u)}</td>`;
     });
     h += '</tr>';
   });
