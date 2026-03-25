@@ -67,7 +67,8 @@
     #error { background: #fff5f5; border: 1px solid #c62828; padding: 6px 10px; color: #c62828; font-size: 8.5pt; margin-bottom: 10px; }
 
     /* Summary table */
-    .summary-tbl { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5pt; }
+    .summary-wrap { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+    .summary-tbl { border-collapse: collapse; font-size: 8.5pt; white-space: nowrap; min-width: 100%; }
     .summary-tbl th {
       background: #222; color: #fff; text-transform: uppercase; font-size: 7pt;
       letter-spacing: 0.06em; font-weight: 700; padding: 5px 8px; text-align: right;
@@ -122,6 +123,7 @@
     .date-range {
       font-size: 8pt; color: #888; margin-bottom: 12px;
       display: flex; align-items: center; gap: 8px;
+      justify-content: center;
     }
     .date-range .dates { font-weight: 600; color: #555; }
     .date-range .hint { font-size: 7pt; color: #bbb; }
@@ -348,9 +350,8 @@ document.addEventListener('keydown', e => {
 // ─── Controls ───
 function setPeriod(n) {
   period = n;
-  document.querySelectorAll('.pbtn').forEach(b => {
-    const v = b.textContent.trim(); b.classList.toggle('active', v===n+'d'||v===n+' Days'||v==='1 Year'&&n===365||parseInt(v)===n);
-  });
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+  event?.target?.classList.add('active');
   scheduleRefresh();
 }
 function toggleYear(yr) {
@@ -451,7 +452,7 @@ function renderSummary(sorted) {
     {t:'Snow Days',k:'snow',fn:cntNZ,u:'',dec:0},
     {t:'Humidity',k:'humidity',fn:avg,u:'%',dec:0},
   ];
-  let h = '<table class="summary-tbl"><thead><tr><th>Year</th>';
+  let h = '<div class="summary-wrap"><table class="summary-tbl"><thead><tr><th>Year</th>';
   cols.forEach(c => h += `<th>${c.t}</th>`);
   h += '</tr></thead><tbody>';
   sorted.forEach(yr => {
@@ -467,7 +468,7 @@ function renderSummary(sorted) {
     });
     h += '</tr>';
   });
-  h += '</tbody></table>';
+  h += '</tbody></table></div>';
   document.getElementById('summary').innerHTML = h;
 }
 
