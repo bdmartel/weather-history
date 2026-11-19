@@ -24,11 +24,11 @@
     .loc-name { font-size: 9pt; color: #555; }
     .loc-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 8pt; text-decoration: underline; }
     .loc-btn:hover { color: #0277bd; }
-    #loc-search { width: 100%; position: relative; }
+    #loc-search { flex: 1 1 150px; min-width: 150px; position: relative; }
     #loc-input {
       width: 100%; background: #fff; color: #222; border: 1px solid #ccc;
-      padding: 5px 8px; font-size: 9pt; outline: none;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+      padding: 4px 8px; font-size: 9pt; outline: none; border-radius: 0;
+      font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-appearance: none;
     }
     #loc-input:focus { border-color: #0277bd; }
     #loc-results {
@@ -80,7 +80,7 @@
     }
     .summary-tbl td:first-child { text-align: left; font-weight: 700; }
     .summary-tbl tr:nth-child(even) td { background: #f5f5f5; }
-    .summary-tbl .yr-dot {
+    .yr-dot {
       display: inline-block; width: 8px; height: 8px; border-radius: 50%;
       margin-right: 5px; vertical-align: middle;
     }
@@ -94,6 +94,20 @@
 
     /* Charts */
     .chart-wrap { position: relative; height: 220px; margin-bottom: 16px; }
+    #cTemp { cursor: pointer; }
+    .readout {
+      border: 1px solid #ccc; border-left: 3px solid #888; padding: 5px 8px;
+      margin-bottom: 6px; font-size: 9pt; min-height: 30px;
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px;
+    }
+    .readout .hint { color: #999; font-size: 8pt; }
+    .readout .r-date { font-weight: 700; }
+    .readout .r-val { font-weight: 700; white-space: nowrap; }
+    .readout .r-val small {
+      font-size: 7pt; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: #999; margin-right: 3px;
+    }
+    .readout .r-val.picked { text-decoration: underline; text-underline-offset: 3px; }
 
     /* Data tables */
     .table-section { margin-bottom: 16px; }
@@ -137,6 +151,8 @@
     body.dark #loc-input:focus { border-color: #4fc3f7; }
     body.dark #loc-results { background: #1a1a1a; border-color: #333; }
     body.dark .loc-item:hover { background: #2a2a2a; }
+    body.dark .readout { border-color: #333; }
+    body.dark .readout .hint, body.dark .readout .r-val small { color: #666; }
     body.dark .spinner { border-color: #333; border-top-color: #4fc3f7; }
     body.dark #error { background: #2a1a1a; border-color: #ef5350; color: #ef5350; }
     body.dark .summary-tbl th, body.dark table.daily th { background: #2a2a2a; color: #ddd; }
@@ -154,6 +170,8 @@
       body { padding: 8px; }
       .pbtn, .ybtn { padding: 8px 14px; font-size: 9pt; min-height: 38px; }
       .chart-wrap { height: 180px; }
+      #loc-input { font-size: 16px; min-height: 38px; padding: 6px 10px; }
+      .readout { font-size: 10pt; min-height: 36px; padding: 7px 10px; }
       table.daily { font-size: 7.5pt; }
 
       .summary-tbl { white-space: normal; }
@@ -184,16 +202,18 @@
 <div id="app">
   <header>
     <h1>Weather History</h1>
-    <div>
-      <span class="loc-name" id="loc-name"></span>
-      <button class="loc-btn" onclick="toggleLoc()">change</button>
-    </div>
+    <span class="loc-name" id="loc-name"></span>
     <button class="loc-btn" id="theme-btn" onclick="toggleDark()" style="margin-left:auto">dark</button>
-    <div id="loc-search" class="hidden">
-      <input type="text" id="loc-input" placeholder="Search city..." oninput="debounceGeo()" onkeydown="if(event.key==='Escape')toggleLoc()">
+  </header>
+
+  <div class="ctrl-row" id="towns">
+    <span class="lbl">Town</span>
+    <span id="presets" style="display:contents"></span>
+    <div id="loc-search">
+      <input type="text" id="loc-input" placeholder="Search another town..." autocomplete="off" oninput="debounceGeo()" onkeydown="if(event.key==='Escape')clearSearch()">
       <div id="loc-results"></div>
     </div>
-  </header>
+  </div>
 
   <div class="ctrl-row" id="periods">
     <span class="lbl">Period</span>
@@ -214,6 +234,7 @@
   <div id="results" class="hidden">
     <div id="summary"></div>
     <div class="sec-hdr">Temperature</div>
+    <div class="readout" id="temp-readout"></div>
     <div class="chart-wrap"><canvas id="cTemp"></canvas></div>
     <div class="sec-hdr">Precipitation</div>
     <div class="chart-wrap"><canvas id="cPrecip"></canvas></div>
@@ -267,7 +288,13 @@ function wxColor(c) {
 }
 
 // ─── State ───
-let loc = JSON.parse(localStorage.getItem('wx-loc')) || { name:'Wilton, NH', lat:42.8406, lon:-71.7356 };
+const PRESETS = [
+  { name:'Peterborough, NH', lat:42.8706, lon:-71.9518 },
+  { name:'Wilton, NH',       lat:42.8434, lon:-71.7351 },
+  { name:'Hancock, NH',      lat:42.9729, lon:-71.9798 },
+];
+let loc = JSON.parse(localStorage.getItem('wx-loc')) || PRESETS[1];
+let tempSel = null; // {yr, i, kind} for the tapped dot on the temperature chart
 let period = 7;
 let activeYears = new Set([THIS_YEAR]);
 let scrubOffset = 0;
@@ -305,7 +332,8 @@ if(localStorage.getItem('wx-theme')==='dark'){
 // ─── Init ───
 loadHash();
 document.getElementById('loc-name').textContent = loc.name;
-document.querySelectorAll('.pbtn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===period));
+document.querySelectorAll('#periods .pbtn').forEach(b => b.classList.toggle('active', parseInt(b.textContent)===period));
+renderPresets();
 renderYearBtns();
 refresh();
 
@@ -391,7 +419,7 @@ document.addEventListener('keydown', e => {
 // ─── Controls ───
 function setPeriod(n) {
   period = n;
-  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#periods .pbtn').forEach(b => b.classList.remove('active'));
   event?.target?.classList.add('active');
   scheduleRefresh();
 }
@@ -411,10 +439,27 @@ function renderYearBtns() {
 }
 
 // Location
-function toggleLoc() {
-  const el=document.getElementById('loc-search'); el.classList.toggle('hidden');
-  if(!el.classList.contains('hidden')) document.getElementById('loc-input').focus();
+function isPreset(p){ return Math.abs(p.lat-loc.lat)<0.02 && Math.abs(p.lon-loc.lon)<0.02; }
+function renderPresets() {
+  document.getElementById('presets').innerHTML = PRESETS.map((p,i) =>
+    `<button class="pbtn${isPreset(p)?' active':''}" onclick="pickPreset(${i})">${p.name.split(',')[0]}</button>`
+  ).join('');
 }
+function clearSearch() {
+  clearTimeout(geoTimer);
+  document.getElementById('loc-results').innerHTML='';
+  const inp=document.getElementById('loc-input'); inp.value=''; inp.blur();
+}
+function setLoc(l) {
+  loc=l;
+  localStorage.setItem('wx-loc',JSON.stringify(loc));
+  document.getElementById('loc-name').textContent=loc.name;
+  clearSearch();
+  renderPresets();
+  Object.keys(cache).forEach(k=>delete cache[k]);
+  refresh();
+}
+function pickPreset(i) { setLoc({...PRESETS[i]}); }
 function debounceGeo() {
   clearTimeout(geoTimer);
   geoTimer = setTimeout(async()=>{
@@ -429,14 +474,7 @@ function debounceGeo() {
 }
 function pickLoc(i) {
   const r=window._gr[i];
-  loc={name:`${r.name}, ${r.admin1||r.country||''}`.replace(/,\s*$/,''),lat:r.latitude,lon:r.longitude};
-  localStorage.setItem('wx-loc',JSON.stringify(loc));
-  document.getElementById('loc-name').textContent=loc.name;
-  document.getElementById('loc-search').classList.add('hidden');
-  document.getElementById('loc-results').innerHTML='';
-  document.getElementById('loc-input').value='';
-  Object.keys(cache).forEach(k=>delete cache[k]);
-  refresh();
+  setLoc({name:`${r.name}, ${r.admin1||r.country||''}`.replace(/,\s*$/,''),lat:r.latitude,lon:r.longitude});
 }
 
 // ─── UI helpers ───
@@ -473,6 +511,7 @@ function dryStreak(d){
 // ─── Render ───
 function renderAll() {
   const sorted = [...activeYears].sort((a,b)=>b-a);
+  tempSel = null;
   renderSummary(sorted);
   renderCharts(sorted);
   renderTables(sorted);
@@ -541,6 +580,43 @@ function chartOpts(yLabel) {
   };
 }
 
+// Dot size on the temperature chart: bigger when there are few days, and the tapped day stands out.
+function dotR(ctx) {
+  const ds = ctx.dataset;
+  if (tempSel && ds.yr===tempSel.yr && ctx.dataIndex===tempSel.i) return 6;
+  return period<=30 ? 3 : period<=60 ? 2.2 : 1.5;
+}
+// A click or tap on the temperature chart picks the nearest day dot.
+function pickTempDot(evt, _els, chart) {
+  const els = chart.getElementsAtEventForMode(evt.native||evt,'index',{intersect:false},false)
+    .filter(e => chart.data.datasets[e.datasetIndex].yr && !e.element.skip);
+  if (!els.length) return;
+  els.sort((a,b)=>Math.abs(a.element.y-evt.y)-Math.abs(b.element.y-evt.y));
+  const ds = chart.data.datasets[els[0].datasetIndex];
+  tempSel = { yr:ds.yr, i:els[0].index, kind:ds.kind };
+  chart.update('none');
+  renderReadout();
+}
+function renderReadout() {
+  const el = document.getElementById('temp-readout');
+  const d = tempSel && yearData[tempSel.yr];
+  if (!d || d.dates[tempSel.i]==null) {
+    tempSel = null;
+    el.style.borderLeftColor = '';
+    el.innerHTML = '<span class="hint">Tap a dot to see that day\u2019s temperature.</span>';
+    return;
+  }
+  const i = tempSel.i, col = C[YEARS.indexOf(tempSel.yr)].m;
+  const hi = d.high[i], lo = d.low[i];
+  const t = v => v!=null ? v.toFixed(1)+'\u00b0F' : '--';
+  const date = new Date(d.dates[i]+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  el.style.borderLeftColor = col;
+  el.innerHTML =
+    `<span class="r-date"><span class="yr-dot" style="background:${col}"></span>${date}</span>` +
+    `<span class="r-val${tempSel.kind==='high'?' picked':''}${hi!=null&&hi<=32?' freeze':''}"><small>High</small>${t(hi)}</span>` +
+    `<span class="r-val${tempSel.kind==='low'?' picked':''}${lo!=null&&lo<=32?' freeze':''}"><small>Low</small>${t(lo)}</span>`;
+}
+
 function renderCharts(sorted) {
   destroyCharts();
   const labels = xLabels();
@@ -553,11 +629,17 @@ function renderCharts(sorted) {
   sorted.forEach(yr => {
     const ci = YEARS.indexOf(yr); const d = yearData[yr]; if(!d) return;
     tempDS.push(
-      {label:`${yr} High`,data:d.high,borderColor:C[ci].m,borderWidth:2,pointRadius:1.5,tension:0.3,fill:false},
-      {label:`${yr} Low`, data:d.low, borderColor:C[ci].m+'88',borderWidth:1.5,pointRadius:1.5,tension:0.3,borderDash:[4,3],fill:false}
+      {label:`${yr} High`,yr,kind:'high',data:d.high,borderColor:C[ci].m,borderWidth:2,tension:0.3,fill:false,
+        pointBackgroundColor:C[ci].m,pointBorderColor:C[ci].m,pointRadius:dotR,pointHoverRadius:dotR,pointHitRadius:14},
+      {label:`${yr} Low`,yr,kind:'low',data:d.low,borderColor:C[ci].m+'88',borderWidth:1.5,tension:0.3,borderDash:[4,3],fill:false,
+        pointBackgroundColor:C[ci].m,pointBorderColor:C[ci].m,pointBorderDash:[],pointRadius:dotR,pointHoverRadius:dotR,pointHitRadius:14}
     );
   });
-  cTemp = new Chart(document.getElementById('cTemp'),{type:'line',data:{labels,datasets:tempDS},options:chartOpts('\u00b0F')});
+  const tOpts = chartOpts('\u00b0F');
+  tOpts.onClick = pickTempDot;
+  tOpts.plugins.tooltip.enabled = matchMedia('(hover: hover)').matches; // on touch screens the readout above the chart does the job
+  cTemp = new Chart(document.getElementById('cTemp'),{type:'line',data:{labels,datasets:tempDS},options:tOpts});
+  renderReadout();
 
   const precipDS = sorted.map(yr => {
     const ci=YEARS.indexOf(yr); const d=yearData[yr]; if(!d) return null;
